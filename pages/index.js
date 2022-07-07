@@ -1,13 +1,45 @@
 import { useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
+import Web3 from 'web3'
+import { newKit } from '@celo/contractkit'
+import Store from '../artifacts/contracts/Store.sol/Store.json'
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
 
-  const [account, setAccount] = useState('j')
+  const kit = newKit('https://alfajores-forno.celo-testnet.org')
 
+  const [account, setAccount] = useState('j')
   const myItems = new Array(20).fill('')
+  
+
+  const connectCeloWallet = async function () {
+    /*const balances = await kit.getTotalBalance()
+    console.log(balances)
+    if (window.celo) {
+        notification("⚠️ Please approve this DApp to use it.")
+      try {
+        await window.celo.enable()
+        const web3 = new Web3(window.celo)
+        kit = newKitFromWeb3(web3)
+        setAccount(kit.defaultAccount)
+  
+      } catch (error) {
+        notification(`⚠️ ${error}.`)
+      }
+    } else {
+      notification("⚠️ Please install the CeloExtensionWallet.")
+    }*/
+  }
+
+  const unlistStore = () => {
+    console.log('what are you waiting to unlist it')
+  }
+
+  const buyItem = () => {[
+    console.log('buy it then')
+  ]}
 
   return (
     <div className={styles.container}>
@@ -33,8 +65,8 @@ export default function Home() {
                 <h3>Nike Airforce</h3>
                 <span>55$</span>
               </section>
-              <button className={styles.delete}>Delete</button>
-              <button>Buy</button>
+              <button className={styles.delete} onClick={unlistStore}>Delete</button>
+              <button onClick={buyItem}>Buy</button>
             </div> )
           }
         </div>
