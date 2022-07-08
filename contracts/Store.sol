@@ -16,9 +16,10 @@ interface IERC20Token {
 
 contract Store {
 
-    uint internal itemsCount = 0;
+    uint internal itemsCount;
     address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
     struct Item {
+        uint256 id;
         address payable seller;
         string name;
         string image;
@@ -29,11 +30,12 @@ contract Store {
     mapping (uint => Item) internal products;
 
     function postItem(string memory _name,string memory _image,uint _price) public {
+        products[itemsCount] = Item(itemsCount,payable(msg.sender), _name, _image, _price, 0, true);
         itemsCount++;
-        products[itemsCount] = Item(payable(msg.sender), _name, _image, _price, 0, true);
     }
 
     function buyItem(uint _index) public payable  {
+        require(msg.value == products[_index].price, "Wrong amount");
         require(IERC20Token(cUsdTokenAddress).transferFrom(msg.sender,products[_index].seller,products[_index].price),"Transfer failed");
         products[_index].sellCount++;
     }
@@ -51,7 +53,7 @@ contract Store {
         Item[] memory marketProducts = new Item[](productsListed);
         
         for(uint i=0; i<itemsCount; i++) {
-            if(products[i].listed) marketProducts[i] = products[i+1];
+            if(products[i].listed) marketProducts[i] = products[i];
         }
         return marketProducts;
     }

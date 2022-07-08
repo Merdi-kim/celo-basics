@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@celo-tools/use-contractkit": "^3.1.0",
     "@celo/contractkit": "^2.0.0",
+    "@celo/react-celo": "^4.0.1",
     "hardhat": "^2.9.9",
     "next": "12.2.0",
     "react": "18.2.0",

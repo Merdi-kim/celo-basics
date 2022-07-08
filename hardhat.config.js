@@ -1,7 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
+const fs = require('fs')
 
-// This is a sample Hardhat task. To learn how to create your own go to
-// https://hardhat.org/guides/create-task.html
+
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
 
@@ -10,8 +10,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
+const privateKey = fs.readFileSync('secret').toString()
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -21,10 +20,7 @@ module.exports = {
   networks: {
     alfajores: {
       url: "https://alfajores-forno.celo-testnet.org",
-      accounts: {
-        mnemonic: process.env.MNEMONIC,
-        path: "m/44'/52752'/0'/0"
-      },
+      accounts: [`0x${privateKey}`],
       chainId: 44787
     }
   }

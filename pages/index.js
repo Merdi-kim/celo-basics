@@ -1,45 +1,51 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
-import Web3 from 'web3'
-import { newKit } from '@celo/contractkit'
+import { useCelo } from '@celo/react-celo';
+import { contractAddress } from '../utils';
 import Store from '../artifacts/contracts/Store.sol/Store.json'
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
 
-  const kit = newKit('https://alfajores-forno.celo-testnet.org')
+  const { connect, address, kit } = useCelo();
+  const contract = new kit.connection.web3.eth.Contract(Store.abi, contractAddress)
 
-  const [account, setAccount] = useState('j')
-  const myItems = new Array(20).fill('')
-  
+  const [myItems, setMyItems] = useState([])
 
-  const connectCeloWallet = async function () {
-    /*const balances = await kit.getTotalBalance()
-    console.log(balances)
-    if (window.celo) {
-        notification("⚠️ Please approve this DApp to use it.")
-      try {
-        await window.celo.enable()
-        const web3 = new Web3(window.celo)
-        kit = newKitFromWeb3(web3)
-        setAccount(kit.defaultAccount)
-  
-      } catch (error) {
-        notification(`⚠️ ${error}.`)
-      }
-    } else {
-      notification("⚠️ Please install the CeloExtensionWallet.")
-    }*/
+  const unlistStore = async(e) => {
+    const id = e.target.getAttribute("data-id");
+    try{
+      await contract.methods.deleteProduct(id).send({from:address})
+    }
+    catch (err) {
+      console.log(err)
+    }
   }
 
-  const unlistStore = () => {
-    console.log('what are you waiting to unlist it')
+  const buyItem = async(e) => {
+    const id = e.target.getAttribute("data-id")
+    const price = e.target.getAttribute("data-price")
+    try{
+      await contract.methods.buyItem(id).send({from:address, value: kit.connection.web3.utils.fromWei(price)})
+    }
+    catch (err) {
+      console.log(err)
+    }
   }
 
-  const buyItem = () => {[
-    console.log('buy it then')
-  ]}
+  const fetchItems = async() => {
+    try{
+      const data = await contract.methods.getAllItems().call()
+      setMyItems(data)
+    }
+    catch (err) {
+      console.log(err)
+    }
+  } 
+  useEffect(() => {
+    fetchItems()
+  }, [])
 
   return (
     <div className={styles.container}>
@@ -53,26 +59,24 @@ export default function Home() {
         <nav>
           <h1>Celo Market</h1>
           <>
-           {!account ? <button>Connect wallet</button> : <Link href={'/post-item'}>New product</Link>  }
+           {!address ? <button onClick={connect}>Connect wallet</button> : <Link href={'/post-item'}>New product</Link>  }
           </>
         </nav>
 
         <div className={styles.items}>
           {
-            myItems.map(item => <div className={styles.item}>
-              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIe211cVjor6ImCg6L3MfUa9B9wgAKsQJp1Q&usqp=CAU" alt="" />
+            myItems?.map(({id, seller, name, image, price}) => <div className={styles.item} key={id}>
+              <img src={image} alt="" />
               <section>
-                <h3>Nike Airforce</h3>
-                <span>55$</span>
+                <h3>{name}</h3>
+                <span>{kit.connection.web3.utils.fromWei(price)}$</span>
               </section>
-              <button className={styles.delete} onClick={unlistStore}>Delete</button>
-              <button onClick={buyItem}>Buy</button>
+              { seller == address && <button data-id={id} className={styles.delete} onClick={unlistStore}>Delete</button>}
+              <button data-id={id} data-price={price} onClick={buyItem}>Buy</button>
             </div> )
           }
         </div>
       </main>
-
-      
     </div>
   )
 }
