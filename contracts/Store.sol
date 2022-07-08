@@ -49,11 +49,12 @@ contract Store {
         owner = msg.sender;
     }
 
+    // ensures product exist and hasn't been deleted or not yet created
     modifier isListed(uint256 _index) {
         require(listed[_index], "Product doesn't exist");
         _;
     }
-
+    // ensures caller is the product owner
     modifier isProductOwner(uint256 _index) {
         require(
             products[_index].seller == msg.sender,
@@ -61,7 +62,16 @@ contract Store {
         );
         _;
     }
+    // ensures caller is a legitimate buyer
+    modifier isBuyer(uint256 _index) {
+        require(
+            products[_index].seller != msg.sender,
+            "Seller can't buy his own item"
+        );
+        _;
+    }
 
+    // creates a new item
     function postItem(
         string memory _name,
         string memory _image,
@@ -88,14 +98,15 @@ contract Store {
         availableCount++;
         itemsCount++;
     }
-
-    function buyItem(uint256 _index) public payable isListed(_index) {
-        require(msg.value == products[_index].price, "Wrong amount");
+    // allow users to buy an item
+    function buyItem(uint256 _index)
+        public
+        payable
+        isListed(_index)
+        isBuyer(_index)
+    {
+        Item storage currentProduct = products[_index];
         require(products[_index].stock > 0, "Out of stock");
-        require(
-            products[_index].seller != msg.sender,
-            "Seller can't buy his own item"
-        );
         require(
             IERC20Token(cUsdTokenAddress).transferFrom(
                 msg.sender,
@@ -104,10 +115,26 @@ contract Store {
             ),
             "Transfer failed"
         );
-        products[_index].sellCount++;
-        products[_index].stock--;
+        currentProduct.sellCount++;
+        currentProduct.stock--;
     }
-
+    // allow users to buy an item in bulk
+    function buyInBulk(uint256 _index, uint256 amount) public isBuyer(_index) {
+        Item storage currentProduct = products[_index];
+        require(currentProduct.stock >= amount, "Not enough in stock");
+        uint256 total = currentProduct.price * amount;
+        require(
+            IERC20Token(cUsdTokenAddress).transferFrom(
+                msg.sender,
+                products[_index].seller,
+                total
+            ),
+            "Transfer failed"
+        );
+        currentProduct.sellCount += amount;
+        currentProduct.stock -= amount;
+    }
+    // allows the product owner to restock his item's inventory
     function reStock(uint256 _index, uint256 amount)
         public
         isProductOwner(_index)
@@ -115,18 +142,18 @@ contract Store {
         require(amount > 0, "Invalid amount for restocking");
         products[_index].stock += amount;
     }
-
+    // helper function to help delet, unlist and clean storage of an item
     function deleteHelper(uint256 _index) private {
         availableCount--;
         listed[_index] = false;
         delete products[_index];
     }
-
+    // allows owner to remove malicious products from the platform
     function removeProduct(uint256 _index) public isListed(_index) {
         require(owner == msg.sender, "Only owner of contract");
         deleteHelper(_index);
     }
-
+    // allows a product owner to unlist and delete his product
     function deleteProduct(uint256 _index)
         public
         isListed(_index)
@@ -134,7 +161,7 @@ contract Store {
     {
         deleteHelper(_index);
     }
-
+    // retrieves all items available for sale
     function getAllItems() public view returns (Item[] memory) {
         Item[] memory marketProducts = new Item[](availableCount);
         uint256 index;
