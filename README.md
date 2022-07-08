@@ -1,5 +1,5 @@
 # Celo Marketplace Dapp
-![](https://github.com/dacadeorg/celo-development-101/blob/main/content/gifs/celo_trailer_02.gif)
+<img width="1440" alt="Screenshot 2022-07-08 at 16 31 36" src="https://user-images.githubusercontent.com/70149872/178001992-441b2733-791a-48c1-8e89-a1e637e0baa0.png">
 
 ## Description
 This is a very simple Store dapp where users can:
@@ -8,8 +8,7 @@ This is a very simple Store dapp where users can:
 * Add your own products to the dapp (permissionlessly)
 
 ## Live Demo
-[Celo store](https://dacadeorg.github.io/celo-marketplace-dapp/)
-
+[Celo store](https://celo-basics.vercel.app/)
 ## Usage
 
 ### Requirements
