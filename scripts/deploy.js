@@ -6,7 +6,6 @@ async function main() {
   const Store = await hre.ethers.getContractFactory("Store");
   const store = await Store.deploy();
   await store.deployed();
-
   console.log("Store deployed to:", store.address);
 }
 

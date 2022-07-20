@@ -164,10 +164,9 @@ contract Store {
     // retrieves all items available for sale
     function getAllItems() public view returns (Item[] memory) {
         Item[] memory marketProducts = new Item[](availableCount);
-        uint256 index;
         for (uint256 i = 0; i < itemsCount; i++) {
             if (listed[i]) {
-                marketProducts[index] = products[i];
+                marketProducts[i] = products[i];
             }
         }
         return marketProducts;

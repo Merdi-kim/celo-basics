@@ -17,6 +17,7 @@ export default function Home() {
     const id = e.target.getAttribute("data-id");
     try{
       await contract.methods.deleteProduct(id).send({from:address})
+      window.alert("Deletion will take a couple of minutes")
     }
     catch (err) {
       console.log(err)
@@ -27,25 +28,46 @@ export default function Home() {
     const id = e.target.getAttribute("data-id")
     const price = e.target.getAttribute("data-price")
     try{
-      await contract.methods.buyItem(id).send({from:address, value: kit.connection.web3.utils.fromWei(price)})
+      await contract.methods.buyItem(id).send({from:address, value: price /*kit.connection.web3.utils.fromWei(price)*/})
+      window.alert("item bought")
     }
     catch (err) {
       console.log(err)
     }
+    
   }
 
   const fetchItems = async() => {
     try{
       const data = await contract.methods.getAllItems().call()
-      setMyItems(data)
+      //console.log(data)
+      setMyItems(Array.isArray(data) && data)
     }
     catch (err) {
-      console.log(err)
+      console.log(`Here is the error: ${err}`)
     }
   } 
+
   useEffect(() => {
     fetchItems()
   }, [])
+
+
+  const items = <div className={styles.items}>
+  {
+    myItems?.map(({id, seller, name, image, price}) => <div className={styles.item} key={id}>
+      <img src={image} alt="" />
+      <section>
+        <h3>{name}</h3>
+        <span>{kit.connection.web3.utils.fromWei(price)}$</span>
+      </section>
+      { seller == address && <button data-id={id} className={styles.delete} onClick={unlistStore}>Delete</button>}
+      { seller != address && <button data-id={id} data-price={price} onClick={buyItem}>Buy</button>}
+
+    </div> )
+  }
+</div>
+
 
   return (
     <div className={styles.container}>
@@ -59,23 +81,15 @@ export default function Home() {
         <nav>
           <h1>Celo Market</h1>
           <>
-           {!address ? <button onClick={connect}>Connect wallet</button> : <Link href={'/post-item'}>New product</Link>  }
+           { address ? <button onClick={connect}>Connect wallet</button> : <Link href={'/post-item'}>New product</Link>}  
           </>
         </nav>
 
-        <div className={styles.items}>
-          {
-            myItems?.map(({id, seller, name, image, price}) => <div className={styles.item} key={id}>
-              <img src={image} alt="" />
-              <section>
-                <h3>{name}</h3>
-                <span>{kit.connection.web3.utils.fromWei(price)}$</span>
-              </section>
-              { seller == address && <button data-id={id} className={styles.delete} onClick={unlistStore}>Delete</button>}
-              <button data-id={id} data-price={price} onClick={buyItem}>Buy</button>
-            </div> )
-          }
-        </div>
+        <>
+          {items} 
+        </>
+
+
       </main>
     </div>
   )

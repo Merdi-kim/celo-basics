@@ -19,7 +19,7 @@ function PostItem() {
     e.preventDefault()
     const contract = new kit.connection.web3.eth.Contract(Store.abi, contractAddress)
     try{
-      await contract.methods.postItem(itemData.name, itemData.imageUrl, kit.connection.web3.utils.toWei(`${itemData.price}`, 'ether')).send({from: address})
+      await contract.methods.postItem(itemData.name, itemData.imageUrl, kit.connection.web3.utils.toWei(`${itemData.price}`, 'ether'), 20).send({from: address})
       Router.push('/')
     }
     catch (err) {
